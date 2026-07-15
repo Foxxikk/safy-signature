@@ -101,6 +101,11 @@ function renderBlockRow(b: Block): string {
         const w = col.width > 0 ? ` width="${col.width}"` : "";
         const wStyle = col.width > 0 ? `width:${col.width}px;` : "";
         const rightPad = i < cols.length - 1 ? `padding-right:${b.gap}px;` : "";
+        // mezera i za svislou linkou (aby se text nelepil na linku)
+        const leftPad =
+          b.barColor && i > 0
+            ? `padding-left:${Math.round(b.gap * 0.65)}px;`
+            : "";
         const inner = renderContainer(col.items);
         const bar =
           b.barColor && i < cols.length - 1
@@ -108,7 +113,7 @@ function renderBlockRow(b: Block): string {
                 b.barColor,
               )};font-size:0;line-height:0;">&nbsp;</td>`
             : "";
-        return `<td valign="${b.valign}"${w} style="${wStyle}${rightPad}">${inner}</td>${bar}`;
+        return `<td valign="${b.valign}"${w} style="${wStyle}${rightPad}${leftPad}">${inner}</td>${bar}`;
       })
       .join("");
     return `<tr><td style="${pad(

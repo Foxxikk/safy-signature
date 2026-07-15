@@ -117,7 +117,7 @@ export const ROOT = "root";
 
 // Verze výchozí šablony. Zvedni při úpravě defaultSignatureDoc,
 // aby se neupravený uložený podpis automaticky obnovil.
-export const TEMPLATE_VERSION = 3;
+export const TEMPLATE_VERSION = 4;
 
 export const DEFAULT_DOC_NAME = "Šafy podpis";
 
@@ -310,7 +310,7 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     padTop: 0,
     padBottom: 16,
     columns: [
-      { id: uid(), width: PSIZE + 16, items: [photo] },
+      { id: uid(), width: 0, items: [photo] },
       { id: uid(), width: 0, items: [name, role, tel, email, socials] },
     ],
   };
