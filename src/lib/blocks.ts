@@ -38,6 +38,7 @@ export interface ImageBlock {
   src: string; // URL nebo data URL (nahraná)
   alt: string;
   width: number;
+  height: number; // 0 = auto (dopočítá klient); pro Outlook je lepší vyplnit
   href: string;
   radius: number; // zaoblení rohů
   align: Align;
@@ -117,7 +118,7 @@ export const ROOT = "root";
 
 // Verze výchozí šablony. Zvedni při úpravě defaultSignatureDoc,
 // aby se neupravený uložený podpis automaticky obnovil.
-export const TEMPLATE_VERSION = 4;
+export const TEMPLATE_VERSION = 5;
 
 export const DEFAULT_DOC_NAME = "Šafy podpis";
 
@@ -159,6 +160,7 @@ export function newBlock(type: Block["type"], c?: CompanySettings): Block {
         src: c?.logoUrl || "",
         alt: "Obrázek",
         width: 180,
+        height: 0,
         href: "",
         radius: 0,
         align: "left",
@@ -220,6 +222,7 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     src: `${originOf(c.logoUrl)}/sig/sample-photo.png`,
     alt: "Foto",
     width: PSIZE,
+    height: PSIZE,
     href: "",
     radius: Math.round(PSIZE / 2),
     align: "left",
@@ -323,13 +326,13 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     src: b.imageUrl,
     alt: b.alt,
     width: bw,
+    height: bh,
     href: b.linkUrl,
     radius: 0,
     align: "left",
     padTop: 0,
     padBottom: 0,
   }));
-  void bh;
   const bannerRow: RowBlock = {
     id: uid(),
     type: "row",
