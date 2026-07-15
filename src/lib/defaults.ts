@@ -22,6 +22,9 @@ export function defaultCompany(origin = ""): CompanySettings {
     defaultFacebookUrl: "https://www.facebook.com/safyproduction",
     defaultInstagramUrl: "https://www.instagram.com/safyproduction",
     photoSize: 92,
+    photoShape: "circle",
+    spacing: "normal",
+    bannerWidth: 300,
     banners: [
       {
         imageUrl: `${base}/sig/banner-obcasnik.png`,
@@ -45,7 +48,9 @@ export function sampleGabriela(): Person {
     role: "creative director",
     phone: "+420 702 024 636",
     email: "gabriela.hudec@safyproduction.cz",
-    photoUrl: "",
+    website: "",
+    photoUrl: `${appOrigin()}/sig/sample-photo.png`,
+    photoDataUrl: "",
     facebookUrl: "https://www.facebook.com/safyproduction",
     instagramUrl: "https://www.instagram.com/safyproduction",
     showFacebook: true,

@@ -6,6 +6,9 @@ export interface Banner {
   alt: string;
 }
 
+export type Spacing = "compact" | "normal" | "spacious";
+export type PhotoShape = "circle" | "square" | "rounded";
+
 export interface CompanySettings {
   logoUrl: string;
   logoLinkUrl: string;
@@ -19,6 +22,9 @@ export interface CompanySettings {
   defaultInstagramUrl: string;
   banners: Banner[]; // firemní bannery (Občasník, Showreel …)
   photoSize: number; // px
+  photoShape: PhotoShape; // tvar fotky
+  spacing: Spacing; // rozestupy
+  bannerWidth: number; // px, šířka jednoho banneru
 }
 
 export interface Person {
@@ -27,7 +33,9 @@ export interface Person {
   role: string;
   phone: string;
   email: string;
-  photoUrl: string;
+  website: string;
+  photoUrl: string; // odkaz na fotku (hostovanou na webu)
+  photoDataUrl: string; // nahraná fotka (data URL) – má přednost
   facebookUrl: string;
   instagramUrl: string;
   showFacebook: boolean;
@@ -42,7 +50,9 @@ export function emptyPerson(): Person {
     role: "",
     phone: "",
     email: "",
+    website: "",
     photoUrl: "",
+    photoDataUrl: "",
     facebookUrl: "",
     instagramUrl: "",
     showFacebook: true,

@@ -1,4 +1,4 @@
-import { CompanySettings, Person } from "./types";
+import { CompanySettings, Person, Spacing } from "./types";
 
 // ---------------------------------------------------------------------------
 // Generátor emailového podpisu.
@@ -7,6 +7,7 @@ import { CompanySettings, Person } from "./types";
 //  - pouze tabulky (žádný flex/grid), vše inline CSS
 //  - žádný <style> blok ani class/id (Gmail je odstraňuje)
 //  - obrázky odkazované přes absolutní URL (NE base64) → malá velikost
+//    (nahraná fotka je výjimka – vloží se jako data URL, viz upozornění v UI)
 //  - pixelové rozměry, border:0, bezpečné fonty s fallbacky
 // ---------------------------------------------------------------------------
 
@@ -20,6 +21,23 @@ function esc(s: string): string {
 
 const FONT = "Arial, Helvetica, sans-serif";
 
+// Rozestupy – násobitel základních paddingů podle zvolené hustoty.
+function spacingScale(s: Spacing): number {
+  if (s === "compact") return 0.55;
+  if (s === "spacious") return 1.6;
+  return 1;
+}
+
+function px(base: number, scale: number): number {
+  return Math.round(base * scale);
+}
+
+function borderRadius(shape: string, size: number): string {
+  if (shape === "square") return "0";
+  if (shape === "rounded") return "12px";
+  return `${Math.round(size / 2)}px`; // circle
+}
+
 function img(
   src: string,
   alt: string,
@@ -31,19 +49,21 @@ function img(
 }
 
 // Vnitřní HTML podpisu (bez <html>/<body>) — pro náhled i kopírování.
-export function generateSignatureHtml(
-  p: Person,
-  c: CompanySettings,
-): string {
+export function generateSignatureHtml(p: Person, c: CompanySettings): string {
   const size = c.photoSize || 92;
+  const scale = spacingScale(c.spacing || "normal");
+  const photoSrc = p.photoDataUrl || p.photoUrl;
 
-  const photoCell = p.photoUrl
-    ? `<td valign="top" style="padding:0 14px 0 0;">${img(
-        p.photoUrl,
+  const photoCell = photoSrc
+    ? `<td valign="top" style="padding:0 ${px(14, scale)}px 0 0;">${img(
+        photoSrc,
         p.fullName,
         size,
         size,
-        `border-radius:${Math.round(size / 2)}px;object-fit:cover;`,
+        `border-radius:${borderRadius(
+          c.photoShape || "circle",
+          size,
+        )};object-fit:cover;`,
       )}</td>`
     : "";
 
@@ -88,7 +108,7 @@ export function generateSignatureHtml(
 
   const iconsRow = `
       <tr>
-        <td style="padding:10px 0 0 0;">
+        <td style="padding:${px(10, scale)}px 0 0 0;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
             ${iconCells}
             <td style="padding:0 0 0 4px;">${logoCell}</td>
@@ -96,30 +116,47 @@ export function generateSignatureHtml(
         </td>
       </tr>`;
 
-  const infoCell = `<td valign="top" style="padding:0 0 0 14px;font-family:${FONT};">
+  const contactRow = (label: string, value: string) =>
+    `<tr><td style="font-family:${FONT};font-size:13px;color:${esc(
+      c.mutedColor,
+    )};line-height:${px(20, scale)}px;">${label}${value}</td></tr>`;
+
+  const infoCell = `<td valign="top" style="padding:0 0 0 ${px(
+    14,
+    scale,
+  )}px;font-family:${FONT};">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         <tr><td style="font-family:${FONT};font-size:20px;font-weight:bold;color:${esc(
           c.textColor,
         )};line-height:24px;">${esc(p.fullName)}</td></tr>
         <tr><td style="font-family:${FONT};font-size:13px;color:${esc(
           c.mutedColor,
-        )};line-height:18px;padding:2px 0 8px 0;">${esc(p.role)}</td></tr>
+        )};line-height:18px;padding:2px 0 ${px(8, scale)}px 0;">${esc(
+          p.role,
+        )}</td></tr>
+        ${p.phone ? contactRow("Tel: ", esc(p.phone)) : ""}
         ${
-          p.phone
-            ? `<tr><td style="font-family:${FONT};font-size:13px;color:${esc(
-                c.mutedColor,
-              )};line-height:20px;">Tel: ${esc(p.phone)}</td></tr>`
+          p.email
+            ? contactRow(
+                "E-mail: ",
+                `<a href="mailto:${esc(p.email)}" style="color:${esc(
+                  c.linkColor,
+                )};text-decoration:underline;">${esc(p.email)}</a>`,
+              )
             : ""
         }
         ${
-          p.email
-            ? `<tr><td style="font-family:${FONT};font-size:13px;color:${esc(
-                c.mutedColor,
-              )};line-height:20px;">E-mail: <a href="mailto:${esc(
-                p.email,
-              )}" style="color:${esc(
-                c.linkColor,
-              )};text-decoration:underline;">${esc(p.email)}</a></td></tr>`
+          p.website
+            ? contactRow(
+                "Web: ",
+                `<a href="${esc(
+                  p.website.startsWith("http")
+                    ? p.website
+                    : "https://" + p.website,
+                )}" style="color:${esc(
+                  c.linkColor,
+                )};text-decoration:underline;">${esc(p.website)}</a>`,
+              )
             : ""
         }
         ${iconsRow}
@@ -133,7 +170,8 @@ export function generateSignatureHtml(
   // Bannery
   let bannersTable = "";
   if (p.showBanners && c.banners.length > 0) {
-    const bw = 300;
+    const bw = c.bannerWidth || 300;
+    const bh = Math.round((bw * 130) / 300);
     const cells = c.banners
       .map(
         (b) =>
@@ -143,12 +181,15 @@ export function generateSignatureHtml(
             b.imageUrl,
             b.alt,
             bw,
-            Math.round((bw * 260) / 640),
+            bh,
           )}</a></td>`,
       )
       .join("");
-    bannersTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;padding-top:14px;">
-      <tr><td style="padding-top:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cells}</tr></table></td></tr>
+    bannersTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="padding-top:${px(
+        14,
+        scale,
+      )}px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${cells}</tr></table></td></tr>
     </table>`;
   }
 
@@ -174,7 +215,7 @@ ${generateSignatureHtml(p, c)}
 </html>`;
 }
 
-// Odhad velikosti výstupu v kB (bez obrázků – ty jsou hostované na URL).
+// Odhad velikosti výstupu v kB (včetně případné nahrané fotky jako data URL).
 export function signatureSizeKb(html: string): number {
   return Math.round((new TextEncoder().encode(html).length / 1024) * 10) / 10;
 }
