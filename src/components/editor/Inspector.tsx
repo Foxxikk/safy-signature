@@ -221,18 +221,29 @@ export default function Inspector() {
                 className="hidden"
                 onChange={async (e) => {
                   const f = e.target.files?.[0];
-                  if (f) set({ src: await resizeImageToDataUrl(f, 600, 0.85) });
+                  if (f)
+                    set({
+                      src: await resizeImageToDataUrl(f, 600, 0.85),
+                      height: block.width, // ořez je čtvercový
+                    });
                   e.target.value = "";
                 }}
               />
             </div>
+            {block.src.startsWith("data:") && (
+              <p className="mt-2 rounded bg-amber-50 p-2 text-[11px] leading-relaxed text-amber-700">
+                ⚠ Nahraná fotka je vložená napřímo a Outlook ji nemusí zobrazit.
+                Pro plnou funkčnost v Outlooku ji nahraj na web a použij URL níže.
+              </p>
+            )}
           </div>
-          <Text label="…nebo URL obrázku" value={block.src} onChange={(v) => set({ src: v })} />
+          <Text label="…nebo URL obrázku (doporučeno pro Outlook)" value={block.src.startsWith("data:") ? "" : block.src} onChange={(v) => set({ src: v })} />
           <Text label="Popisek (alt)" value={block.alt} onChange={(v) => set({ alt: v })} />
           <Text label="Odkaz po kliknutí" value={block.href} onChange={(v) => set({ href: v })} />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Num label="Šířka (px)" value={block.width} min={16} max={640} onChange={(v) => set({ width: v })} />
-            <Num label="Zaoblení (px)" value={block.radius} min={0} max={400} onChange={(v) => set({ radius: v })} />
+            <Num label="Výška (px)" value={block.height} min={0} max={640} onChange={(v) => set({ height: v })} />
+            <Num label="Zaoblení" value={block.radius} min={0} max={400} onChange={(v) => set({ radius: v })} />
           </div>
           <AlignPicker value={block.align} onChange={(v) => set({ align: v })} />
           <Spacing top={block.padTop} bottom={block.padBottom} onTop={(v) => set({ padTop: v })} onBottom={(v) => set({ padBottom: v })} />
