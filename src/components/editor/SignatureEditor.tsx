@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Block,
+  DEFAULT_DOC_NAME,
   SignatureDoc,
+  TEMPLATE_VERSION,
   defaultSignatureDoc,
   deleteBlock,
   duplicateBlock,
@@ -44,7 +46,14 @@ export default function SignatureEditor() {
     const c = loadCompany();
     setCompany(c);
     const existing = loadCurrentDoc();
-    setDoc(existing ?? defaultSignatureDoc(c));
+    const fresh = defaultSignatureDoc(c);
+    // Neupravený výchozí podpis (stejný název, starší verze šablony) obnov na
+    // nejnovější šablonu; přejmenované/uložené podpisy nech být.
+    const isUntouchedDefault =
+      !!existing &&
+      existing.name === DEFAULT_DOC_NAME &&
+      (existing.templateVersion ?? 0) < TEMPLATE_VERSION;
+    setDoc(!existing || isUntouchedDefault ? fresh : existing);
     setLibrary(loadLibrary());
     initialized.current = true;
   }, []);
