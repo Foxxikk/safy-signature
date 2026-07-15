@@ -110,9 +110,16 @@ export interface SignatureDoc {
   name: string;
   blocks: Block[];
   background: string;
+  templateVersion?: number;
 }
 
 export const ROOT = "root";
+
+// Verze výchozí šablony. Zvedni při úpravě defaultSignatureDoc,
+// aby se neupravený uložený podpis automaticky obnovil.
+export const TEMPLATE_VERSION = 2;
+
+export const DEFAULT_DOC_NAME = "Šafy podpis";
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -206,14 +213,15 @@ export function newBlock(type: Block["type"], c?: CompanySettings): Block {
 
 // ---- Výchozí šablona: reprodukuje stávající podpis Šafy ----
 export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
+  const PSIZE = 104;
   const photo: ImageBlock = {
     id: uid(),
     type: "image",
     src: `${originOf(c.logoUrl)}/sig/sample-photo.png`,
     alt: "Foto",
-    width: c.photoSize || 92,
+    width: PSIZE,
     href: "",
-    radius: Math.round((c.photoSize || 92) / 2),
+    radius: Math.round(PSIZE / 2),
     align: "left",
     padTop: 0,
     padBottom: 0,
@@ -222,13 +230,13 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     id: uid(),
     type: "text",
     text: "Gabriela Hudec",
-    fontSize: 20,
+    fontSize: 18,
     bold: true,
     italic: false,
     color: c.textColor,
     align: "left",
     padTop: 0,
-    padBottom: 2,
+    padBottom: 1,
   };
   const role: TextBlock = {
     id: uid(),
@@ -240,33 +248,33 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     color: c.mutedColor,
     align: "left",
     padTop: 0,
-    padBottom: 8,
+    padBottom: 14,
   };
   const tel: ContactBlock = {
     id: uid(),
     type: "contact",
     label: "Tel: ",
-    value: "+420 702 024 636",
+    value: "+ 420 702 024 636",
     href: "",
     fontSize: 13,
     color: c.mutedColor,
     linkColor: c.linkColor,
     align: "left",
     padTop: 0,
-    padBottom: 2,
+    padBottom: 1,
   };
   const email: ContactBlock = {
     id: uid(),
     type: "contact",
     label: "E-mail: ",
-    value: "gabriela.hudec@safyproduction.cz",
+    value: "Gabriela.hudec@safyproduction.cz",
     href: "mailto:gabriela.hudec@safyproduction.cz",
     fontSize: 13,
     color: c.mutedColor,
     linkColor: c.linkColor,
     align: "left",
     padTop: 0,
-    padBottom: 8,
+    padBottom: 10,
   };
   const socials: SocialsBlock = {
     id: uid(),
@@ -298,11 +306,11 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     type: "row",
     gap: 14,
     barColor: c.brandColor,
-    valign: "top",
+    valign: "middle",
     padTop: 0,
-    padBottom: 14,
+    padBottom: 16,
     columns: [
-      { id: uid(), width: (c.photoSize || 92) + 14, items: [photo] },
+      { id: uid(), width: PSIZE + 16, items: [photo] },
       { id: uid(), width: 0, items: [name, role, tel, email, socials] },
     ],
   };
@@ -339,8 +347,9 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
 
   return {
     id: uid(),
-    name: "Šafy podpis",
+    name: DEFAULT_DOC_NAME,
     background: "",
+    templateVersion: TEMPLATE_VERSION,
     blocks: [identityRow, bannerRow],
   };
 }

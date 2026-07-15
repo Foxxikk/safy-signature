@@ -45,7 +45,7 @@ function renderLeafInner(b: LeafBlock): string {
         b.bold ? "font-weight:bold;" : ""
       }${b.italic ? "font-style:italic;" : ""}color:${esc(
         b.color,
-      )};line-height:1.3;`;
+      )};line-height:1.2;`;
       return `<span style="${style}">${esc(b.text).replace(
         /\n/g,
         "<br />",
@@ -54,7 +54,7 @@ function renderLeafInner(b: LeafBlock): string {
     case "contact": {
       const style = `font-family:${FONT};font-size:${b.fontSize}px;color:${esc(
         b.color,
-      )};line-height:1.5;`;
+      )};line-height:1.45;`;
       const val = b.href
         ? `<a href="${esc(href(b.href))}" style="color:${esc(
             b.linkColor,
