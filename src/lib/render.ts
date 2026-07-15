@@ -54,7 +54,7 @@ function renderLeafInner(b: LeafBlock): string {
     case "contact": {
       const style = `font-family:${FONT};font-size:${b.fontSize}px;color:${esc(
         b.color,
-      )};line-height:1.45;`;
+      )};line-height:1.25;`;
       const val = b.href
         ? `<a href="${esc(href(b.href))}" style="color:${esc(
             b.linkColor,

@@ -117,7 +117,7 @@ export const ROOT = "root";
 
 // Verze výchozí šablony. Zvedni při úpravě defaultSignatureDoc,
 // aby se neupravený uložený podpis automaticky obnovil.
-export const TEMPLATE_VERSION = 2;
+export const TEMPLATE_VERSION = 3;
 
 export const DEFAULT_DOC_NAME = "Šafy podpis";
 
@@ -248,7 +248,7 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     color: c.mutedColor,
     align: "left",
     padTop: 0,
-    padBottom: 14,
+    padBottom: 8,
   };
   const tel: ContactBlock = {
     id: uid(),
@@ -274,7 +274,7 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     linkColor: c.linkColor,
     align: "left",
     padTop: 0,
-    padBottom: 10,
+    padBottom: 6,
   };
   const socials: SocialsBlock = {
     id: uid(),
@@ -333,7 +333,7 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
   const bannerRow: RowBlock = {
     id: uid(),
     type: "row",
-    gap: 6,
+    gap: 0,
     barColor: "",
     valign: "top",
     padTop: 0,
