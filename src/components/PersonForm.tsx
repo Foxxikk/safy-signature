@@ -1,6 +1,8 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Person } from "@/lib/types";
+import { resizeImageToDataUrl, dataUrlSizeKb } from "@/lib/image";
 
 function Field({
   label,
@@ -60,8 +62,27 @@ export default function PersonForm({
   person: Person;
   onChange: (p: Person) => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = useState("");
+
   const set = <K extends keyof Person>(key: K, val: Person[K]) =>
     onChange({ ...person, [key]: val });
+
+  async function handleFile(file: File) {
+    setUploadError("");
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Vyber prosím obrázek.");
+      return;
+    }
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 240, 0.82);
+      onChange({ ...person, photoDataUrl: dataUrl });
+    } catch {
+      setUploadError("Fotku se nepodařilo zpracovat.");
+    }
+  }
+
+  const photoSizeKb = dataUrlSizeKb(person.photoDataUrl);
 
   return (
     <div className="space-y-4">
@@ -94,11 +115,77 @@ export default function PersonForm({
       </div>
 
       <Field
-        label="URL profilové fotky (volitelné)"
-        value={person.photoUrl}
-        onChange={(v) => set("photoUrl", v)}
-        placeholder="https://…/foto.jpg"
+        label="Web (volitelné)"
+        value={person.website}
+        onChange={(v) => set("website", v)}
+        placeholder="www.safyproduction.cz"
       />
+
+      {/* Fotka: nahrání nebo URL */}
+      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+        <span className="mb-2 block text-sm font-medium text-neutral-700">
+          Profilová fotka
+        </span>
+        <div className="flex items-center gap-4">
+          {(person.photoDataUrl || person.photoUrl) && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={person.photoDataUrl || person.photoUrl}
+              alt="Náhled fotky"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-neutral-300"
+            />
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700"
+            >
+              Nahrát fotku
+            </button>
+            {person.photoDataUrl && (
+              <>
+                <span className="text-xs text-neutral-500">
+                  nahráno ({photoSizeKb} kB)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => set("photoDataUrl", "")}
+                  className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-600 hover:bg-white"
+                >
+                  Odebrat
+                </button>
+              </>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+                e.target.value = "";
+              }}
+            />
+          </div>
+        </div>
+        {uploadError && (
+          <p className="mt-2 text-sm text-red-600">{uploadError}</p>
+        )}
+        <div className="mt-3">
+          <Field
+            label="…nebo URL fotky (lehčí varianta pro e-mail)"
+            value={person.photoUrl}
+            onChange={(v) => set("photoUrl", v)}
+            placeholder="https://…/foto.jpg"
+          />
+        </div>
+        <p className="mt-1 text-xs text-neutral-400">
+          Nahraná fotka se vloží přímo do podpisu (zmenšená). URL fotka drží
+          podpis nejlehčí.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
