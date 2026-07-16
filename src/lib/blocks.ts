@@ -2,6 +2,7 @@
 // Podpis = strom bloků. Kořen i každý sloupec jsou "kontejnery" bloků.
 
 import { CompanySettings } from "./types";
+import { ASSET_BASE } from "./defaults";
 
 export type Align = "left" | "center" | "right";
 
@@ -118,7 +119,7 @@ export const ROOT = "root";
 
 // Verze výchozí šablony. Zvedni při úpravě defaultSignatureDoc,
 // aby se neupravený uložený podpis automaticky obnovil.
-export const TEMPLATE_VERSION = 5;
+export const TEMPLATE_VERSION = 7;
 
 export const DEFAULT_DOC_NAME = "Šafy podpis";
 
@@ -215,16 +216,17 @@ export function newBlock(type: Block["type"], c?: CompanySettings): Block {
 
 // ---- Výchozí šablona: reprodukuje stávající podpis Šafy ----
 export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
-  const PSIZE = 104;
+  // Fotka Šafy má kruh i zelenou linku zapečené přímo v PNG (průhledné rohy),
+  // hostovaná na firemní doméně → čistá a v Outlooku se nezablokuje.
   const photo: ImageBlock = {
     id: uid(),
     type: "image",
-    src: `${originOf(c.logoUrl)}/sig/sample-photo.png`,
-    alt: "Foto",
-    width: PSIZE,
-    height: PSIZE,
+    src: `${ASSET_BASE}/people/gabi.png`,
+    alt: "Gabriela Hudec",
+    width: 140,
+    height: 123,
     href: "",
-    radius: Math.round(PSIZE / 2),
+    radius: 0,
     align: "left",
     padTop: 0,
     padBottom: 0,
@@ -291,24 +293,24 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
         iconUrl: c.fbIconUrl,
         href: c.defaultFacebookUrl,
         alt: "Facebook",
-        w: 24,
-        h: 24,
+        w: 20,
+        h: 20,
       },
       {
         iconUrl: c.igIconUrl,
         href: c.defaultInstagramUrl,
         alt: "Instagram",
-        w: 24,
-        h: 24,
+        w: 20,
+        h: 20,
       },
-      { iconUrl: c.logoUrl, href: c.logoLinkUrl, alt: "Šafy", w: 60, h: 24 },
+      { iconUrl: c.logoUrl, href: c.logoLinkUrl, alt: "Šafy", w: 52, h: 20 },
     ],
   };
   const identityRow: RowBlock = {
     id: uid(),
     type: "row",
-    gap: 14,
-    barColor: c.brandColor,
+    gap: 16,
+    barColor: "", // zelená linka je zapečená přímo ve fotce (gabi.png)
     valign: "middle",
     padTop: 0,
     padBottom: 16,
@@ -355,15 +357,6 @@ export function defaultSignatureDoc(c: CompanySettings): SignatureDoc {
     templateVersion: TEMPLATE_VERSION,
     blocks: [identityRow, bannerRow],
   };
-}
-
-function originOf(url: string): string {
-  try {
-    const u = new URL(url);
-    return u.origin;
-  } catch {
-    return "";
-  }
 }
 
 // ---- Operace nad stromem (přesun/vložení/smazání) ----
